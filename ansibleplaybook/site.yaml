@@ -1,0 +1,35 @@
+---
+
+- hosts: all
+  become: yes
+  pre_tasks:
+
+  - name: update & upgrade server
+    apt:
+      update_cache: yes
+      upgrade: yes
+
+  - name: cron job to check uptime of server every 12am
+    cron:
+      name: cron job to check uptime of server every 12am
+      minute: "0"
+      hour: "0"
+      day: "*"
+      month: "*"
+      weekday: "*"
+      job: "/usr/bin/uptime > /var/log/uptime_check.log 2>&1"
+      state: present
+
+  - name: copy script to slave machine
+    copy:
+      src: lampdeployment-slave.sh
+      dest: ~/
+      owner: root
+      group: root
+      mode: 744
+
+  - name: set execute permissions
+    command: chmod +x ~/lampdeployment-slave.sh
+
+  - name: run script
+    command: bash lampdeployment-slave altschool altschool001 < /dev/null
